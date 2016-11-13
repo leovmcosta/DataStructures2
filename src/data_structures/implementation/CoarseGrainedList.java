@@ -19,12 +19,7 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
         }
 
         public int compareTo(Node o) {
-            if (this.key > o.key) {
-                return 1;
-            } else if (this.key < o.key) {
-                return -1;
-            }
-            return 0;
+            return this.item.compareTo(o.item);
         }
     }
 
