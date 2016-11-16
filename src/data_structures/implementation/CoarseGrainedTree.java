@@ -1,7 +1,7 @@
 package data_structures.implementation;
 
 import java.util.ArrayList;
-import java.util.Array;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -34,7 +34,8 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	}
 
     public void add(T t) throws UnsupportedOperationException {
-	    Node newNode = new Node(t);
+	    int key = t.hashCode();
+	    Node newNode = new Node(key);
 	    if (root==null) {
 		    root = newNode;
 		    return;
@@ -43,11 +44,11 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	    Node parent = null;
 	    while (true) {
 		    parent = current;
-		    if (t<current.key) {
+		    if (key<current.key) {
 			    current = current.left;
 			    if (current==null) {
 				    parent.left = newNode;
-				    return
+				    return;
 			    }
 		    } else {
 			    current = current.right;
@@ -60,12 +61,13 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
     }
 
     public void remove(T t) throws UnsupportedOperationException {
+        int key = t.hashCode();
         Node parent = root;
         Node current = root;
         boolean isLeftChild = false;
-        while (current.key != t) {
+        while (current.key != key) {
 	        parent = current;
-	        if (current.key>t) {
+	        if (current.key>key) {
 		        isLeftChild = true;
 		        current = current.left;
 	        } else {
@@ -73,7 +75,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 		        current = current.right;
 	        }
 	        if (current == null) {
-		        return false;
+		        return;
 	        }
         }
         if (current.left == null && current.right == null) {
@@ -88,7 +90,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
         }
         else if (current.right == null) {
 	        if (current == root) {
-		        root = current.left
+		        root = current.left;
 	        } else if (isLeftChild) {
 		        parent.left = current.left;
 	        } else {
@@ -115,7 +117,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	        }
 	        successor.left = current.left;
         }
-        return true;
+        return;
     }
     
     public Node getSuccessor(Node deleteNode) {
@@ -134,7 +136,19 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	    return successor;
     }
 
-    public ArrayList<T> toArrayList() {
-        throw new UnsupportedOperationException();
+    public ArrayList<T> toArrayList() throws UnsupportedOperationException {
+	    Node root;
+	    ArrayList<T> list = new ArrayList<>();
+	    lock.lock();
+	    try {
+		    root = root;
+		    while (root.key != Integer.MIN_VALUE) {
+			    List.add(root.item);
+			    root = root.next;
+		    }
+	    } finally {
+		    lock.unlock();
+	    }
+	    return List;
     }
 }
