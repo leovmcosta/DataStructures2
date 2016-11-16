@@ -30,19 +30,108 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	private Lock lock = new ReentrantLock();
 	
 	public CoarseGrainedTree() {
-		root = new Node();
-		root.left = new Node();
-		root.right = new Node();
+		root = null;
 	}
 
     public void add(T t) throws UnsupportedOperationException() {
-	    //if root == null, node = root
-	    //if t < root, add left
-	    //else, add right
+	    Node newNode = new Node(t);
+	    if (root==null) {
+		    root = newNode;
+		    return;
+	    }
+	    Node current = root;
+	    Node parent = null;
+	    while (true) {
+		    parent = current;
+		    if (t<current.key) {
+			    current = current.left;
+			    if (current==null) {
+				    parent.left = newNode;
+				    return
+			    }
+		    } else {
+			    current = current.right;
+			    if (current==null) {
+				    parent.right = newNode;
+				    return;
+			    }
+		    }
+	    }
     }
 
-    public void remove(T t) {
-        throw new UnsupportedOperationException();
+    public void remove(T t) throws UnsupportedOperationException() {
+        Node parent = root;
+        Node current = root;
+        boolean isLeftChild = false;
+        while (current.key != t) {
+	        parent = current;
+	        if (current.key>t) {
+		        isLeftChild = true;
+		        current = current.left;
+	        } else {
+		        isLeftChild = false;
+		        current = current.right;
+	        }
+	        if (current == null) {
+		        return false;
+	        }
+        }
+        if (current.left == null && current.right == null) {
+	        if (current == root) {
+		        root = null;
+	        }
+	        if (isLeftChild == true) {
+		        parent.left = null;
+	        } else {
+		        parent.right = null;
+	        }
+        }
+        else if (current.right == null) {
+	        if (current == root) {
+		        root = current.left
+	        } else if (isLeftChild) {
+		        parent.left = current.left;
+	        } else {
+		        parent.right = current.left;
+	        }
+        }
+        else if (current.left == null) {
+	        if (current == root) {
+		        root = current.right;
+	        } else if (isLeftChild) {
+		        parent.left = current.right;
+	        } else {
+		        parent.right = current.right;
+	        }
+        }
+        else if (current.left != null && current.right != null) {
+	        Node successor = getSuccessor(current);
+	        if (current == root) {
+		        root = successor;
+	        } else if (isLeftChild) {
+		        parent.left = successor;
+	        } else {
+		        parent.right = successor;
+	        }
+	        successor.left = current.left;
+        }
+        return true;
+    }
+    
+    public Node getSuccessor(Node deleteNode) {
+	    Node successor = null;
+	    Node successorParent = null;
+	    Node current = deleteNode.right;
+	    while (current != null) {
+		    successorParent = successor;
+		    successor = current;
+		    current = current.left;
+	    }
+	    if (successor != deleteNode.right) {
+		    successorParent.left = successor.right;
+		    successor.right = deleteNode.right;
+	    }
+	    return successor;
     }
 
     public ArrayList<T> toArrayList() {
