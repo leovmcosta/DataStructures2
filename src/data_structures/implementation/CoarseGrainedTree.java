@@ -36,28 +36,33 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
     public void add(T t) throws UnsupportedOperationException {
 	    int key = t.hashCode();
 	    Node newNode = new Node(key);
-	    if (root==null) {
-		    root = newNode;
-		    return;
-	    }
-	    Node current = root;
-	    Node parent = null;
-	    while (true) {
-		    parent = current;
-		    if (key<current.key) {
-			    current = current.left;
-			    if (current==null) {
-				    parent.left = newNode;
-				    return;
-			    }
-		    } else {
-			    current = current.right;
-			    if (current==null) {
-				    parent.right = newNode;
-				    return;
+	    lock.lock();
+	    try {
+		    if (root==null) {
+			    root = newNode;
+			    return;
+		    }
+		    Node current = root;
+		    Node parent = null;
+		    while (true) {
+			    parent = current;
+			    if (key<current.key) {
+				    current = current.left;
+				    if (current==null) {
+					    parent.left = newNode;
+					    return;
+				    }
+			    } else {
+				    current = current.right;
+				    if (current==null) {
+					    parent.right = newNode;
+					    return;
+				    }
 			    }
 		    }
-	    }
+		} finally {
+			lock.unlock();
+		}
     }
 
     public void remove(T t) throws UnsupportedOperationException {
@@ -65,59 +70,63 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
         Node parent = root;
         Node current = root;
         boolean isLeftChild = false;
-        while (current.key != key) {
-	        parent = current;
-	        if (current.key>key) {
-		        isLeftChild = true;
-		        current = current.left;
-	        } else {
-		        isLeftChild = false;
-		        current = current.right;
+        lock.lock();
+        try {
+	        while (current.key != key) {
+		        parent = current;
+		        if (current.key>key) {
+			        isLeftChild = true;
+			        current = current.left;
+		        } else {
+			        isLeftChild = false;
+			        current = current.right;
+		        }
+		        if (current == null) {
+			        return;
+		        }
 	        }
-	        if (current == null) {
-		        return;
+	        if (current.left == null && current.right == null) {
+		        if (current == root) {
+			        root = null;
+		        }
+		        if (isLeftChild == true) {
+			        parent.left = null;
+		        } else {
+			        parent.right = null;
+		        }
 	        }
-        }
-        if (current.left == null && current.right == null) {
-	        if (current == root) {
-		        root = null;
+	        else if (current.right == null) {
+		        if (current == root) {
+			        root = current.left;
+		        } else if (isLeftChild) {
+			        parent.left = current.left;
+		        } else {
+			        parent.right = current.left;
+		        }
 	        }
-	        if (isLeftChild == true) {
-		        parent.left = null;
-	        } else {
-		        parent.right = null;
+	        else if (current.left == null) {
+		        if (current == root) {
+			        root = current.right;
+		        } else if (isLeftChild) {
+			        parent.left = current.right;
+		        } else {
+			        parent.right = current.right;
+		        }
 	        }
-        }
-        else if (current.right == null) {
-	        if (current == root) {
-		        root = current.left;
-	        } else if (isLeftChild) {
-		        parent.left = current.left;
-	        } else {
-		        parent.right = current.left;
+	        else if (current.left != null && current.right != null) {
+		        Node successor = getSuccessor(current);
+		        if (current == root) {
+			        root = successor;
+		        } else if (isLeftChild) {
+			        parent.left = successor;
+		        } else {
+			        parent.right = successor;
+		        }
+		        successor.left = current.left;
 	        }
-        }
-        else if (current.left == null) {
-	        if (current == root) {
-		        root = current.right;
-	        } else if (isLeftChild) {
-		        parent.left = current.right;
-	        } else {
-		        parent.right = current.right;
-	        }
-        }
-        else if (current.left != null && current.right != null) {
-	        Node successor = getSuccessor(current);
-	        if (current == root) {
-		        root = successor;
-	        } else if (isLeftChild) {
-		        parent.left = successor;
-	        } else {
-		        parent.right = successor;
-	        }
-	        successor.left = current.left;
-        }
-        return;
+	    } finally {
+		    lock.unlock();
+	    }
     }
     
     public Node getSuccessor(Node deleteNode) {
@@ -137,18 +146,19 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
     }
 
     public ArrayList<T> toArrayList() throws UnsupportedOperationException {
-	    Node root;
 	    ArrayList<T> list = new ArrayList<>();
+	    Node curr;
 	    lock.lock();
 	    try {
-		    root = root;
-		    while (root.key != Integer.MIN_VALUE) {
-			    List.add(root.item);
-			    root = root.next;
+		    curr = root;
+		    while (curr.key != Integer.MIN_VALUE) {
+			    list.add(curr.item);
+			    curr = curr.next;
 		    }
 	    } finally {
 		    lock.unlock();
 	    }
-	    return List;
+	    return list;
     }
+	   
 }
