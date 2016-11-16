@@ -33,7 +33,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 		root = null;
 	}
 
-    public void add(T t) throws UnsupportedOperationException() {
+    public void add(T t) throws UnsupportedOperationException {
 	    Node newNode = new Node(t);
 	    if (root==null) {
 		    root = newNode;
@@ -59,7 +59,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	    }
     }
 
-    public void remove(T t) throws UnsupportedOperationException() {
+    public void remove(T t) throws UnsupportedOperationException {
         Node parent = root;
         Node current = root;
         boolean isLeftChild = false;
