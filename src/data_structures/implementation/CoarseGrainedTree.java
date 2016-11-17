@@ -20,10 +20,6 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 			right = null;
 			left = null;
 		}
-		
-		public int compareTo(Node o) {
-			return this.item.compareTo(o.item);
-		}
 	}
 	
 	private Node root;
@@ -38,6 +34,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	    Node newNode = new Node(key);
 	    lock.lock();
 	    try {
+		    System.out.println("locked add");
 		    if (root==null) {
 			    root = newNode;
 			    return;
@@ -61,6 +58,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 			    }
 		    }
 		} finally {
+			System.out.println("unlocked add");
 			lock.unlock();
 		}
     }
@@ -72,6 +70,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
         boolean isLeftChild = false;
         lock.lock();
         try {
+	        System.out.println("locked remove");
 	        while (current.key != key) {
 		        parent = current;
 		        if (current.key>key) {
@@ -125,6 +124,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 		        successor.left = current.left;
 	        }
 	    } finally {
+		    System.out.println("unlocked remove");
 		    lock.unlock();
 	    }
     }
@@ -147,17 +147,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 
     public ArrayList<T> toArrayList() throws UnsupportedOperationException {
 	    ArrayList<T> list = new ArrayList<>();
-	    Node curr;
-	    lock.lock();
-	    try {
-		    curr = root;
-		    while (curr.key != Integer.MIN_VALUE) {
-			    list.add(curr.item);
-			    curr = curr.next;
-		    }
-	    } finally {
-		    lock.unlock();
-	    }
+	    System.out.println("Arraylist");
 	    return list;
     }
 	   
