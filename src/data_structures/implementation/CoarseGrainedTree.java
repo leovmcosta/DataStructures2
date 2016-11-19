@@ -7,18 +7,19 @@ import java.util.concurrent.locks.ReentrantLock;
 import data_structures.Sorted;
 
 public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
-
-    
 	public class Node {
 		T item;
-		int key;
 		Node left;
 		Node right;
 		
-		public Node(int key) {
-			this.key = key;
-			right = null;
-			left = null;
+		public Node(T item) {
+			this.item = item;
+			this.left = null;
+			this.right = null;
+		}
+
+		public int compareTo(Node o) {
+			return this.item.compareTo(o.item);
 		}
 	}
 	
@@ -26,24 +27,22 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	private Lock lock = new ReentrantLock();
 	
 	public CoarseGrainedTree() {
-		root = null;
+		root = new Node(null);
 	}
 
     public void add(T t) throws UnsupportedOperationException {
-	    int key = t.hashCode();
-	    Node newNode = new Node(key);
+	    Node newNode = new Node(t);
 	    lock.lock();
 	    try {
-		    System.out.println("locked add");
-		    if (root==null) {
+		    if (root.item == null) {
 			    root = newNode;
 			    return;
 		    }
 		    Node current = root;
-		    Node parent = null;
+		    Node parent;
 		    while (true) {
 			    parent = current;
-			    if (key<current.key) {
+				if (current.compareTo(newNode) > 0) {
 				    current = current.left;
 				    if (current==null) {
 					    parent.left = newNode;
@@ -58,22 +57,22 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 			    }
 		    }
 		} finally {
-			System.out.println("unlocked add");
 			lock.unlock();
 		}
     }
 
     public void remove(T t) throws UnsupportedOperationException {
-        int key = t.hashCode();
-        Node parent = root;
+		Node removeNode = new Node(t);
+
+		Node parent = root;
         Node current = root;
         boolean isLeftChild = false;
+
         lock.lock();
         try {
-	        System.out.println("locked remove");
-	        while (current.key != key) {
+	        while (removeNode.compareTo(current) != 0) {
 		        parent = current;
-		        if (current.key>key) {
+				if (current.compareTo(removeNode) > 0) {
 			        isLeftChild = true;
 			        current = current.left;
 		        } else {
@@ -88,7 +87,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 		        if (current == root) {
 			        root = null;
 		        }
-		        if (isLeftChild == true) {
+		        if (isLeftChild) {
 			        parent.left = null;
 		        } else {
 			        parent.right = null;
@@ -112,7 +111,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 			        parent.right = current.right;
 		        }
 	        }
-	        else if (current.left != null && current.right != null) {
+	        else {
 		        Node successor = getSuccessor(current);
 		        if (current == root) {
 			        root = successor;
@@ -124,7 +123,6 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 		        successor.left = current.left;
 	        }
 	    } finally {
-		    System.out.println("unlocked remove");
 		    lock.unlock();
 	    }
     }
@@ -146,9 +144,23 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
     }
 
     public ArrayList<T> toArrayList() throws UnsupportedOperationException {
-	    ArrayList<T> list = new ArrayList<>();
-	    System.out.println("Arraylist");
-	    return list;
+	    return extractValues(this.root);
     }
+
+	public ArrayList<T> extractValues(Node n) {
+		ArrayList<T> result = new ArrayList<>();
+		if (n == null) return result;
+		if (n.left != null) {
+			result.addAll(extractValues(n.left));
+		}
+
+		if (n.right != null) {
+			result.addAll(extractValues(n.right));
+		}
+
+		result.add(n.item);
+
+		return result;
+	}
 	   
 }

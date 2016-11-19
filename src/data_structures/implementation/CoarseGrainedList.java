@@ -11,6 +11,10 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
         T item;
         Node next;
 
+        public Node (T item) {
+            this.item = item;
+        }
+
         public int compareTo(Node o) {
             return this.item == null ? 1 : this.item.compareTo(o.item);
         }
@@ -20,15 +24,13 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
     private Lock lock = new ReentrantLock();
 
     public CoarseGrainedList() {
-        head = new Node();
-        head.next = new Node();
-        head.item = null;
+        head = new Node(null);
+        head.next = new Node(null);
     }
 
     public void add(T t) throws UnsupportedOperationException {
         Node pred, curr;
-        Node n = new Node();
-        n.item = t;
+        Node n = new Node(t);
         lock.lock();
         try {
             pred = head;
@@ -46,8 +48,7 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
 
     public void remove(T t) throws UnsupportedOperationException {
         Node pred, curr;
-        Node n = new Node();
-        n.item = t;
+        Node n = new Node(t);
         lock.lock();
         try {
             pred = head;
