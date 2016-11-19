@@ -1,35 +1,14 @@
 package data_structures.implementation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-<<<<<<< HEAD
-import java.utils.List;
-=======
-import java.util.List;
->>>>>>> 15c252646c838bef6b4d931f6e1f161963174b8c
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import data_structures.Sorted;
 
 public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
-<<<<<<< HEAD
+
     
-    public class Node {
-        T item;
-        int key;
-        Node left;
-        Node right;
-        
-        Public Node(int key) {
-            this.key = key;
-        }
-    }
-    
-    private Node root;
-    private Lock lock = new ReentrantLock();
-    
-=======
 	public class Node {
 		T item;
 		int key;
@@ -49,7 +28,6 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 	public CoarseGrainedTree() {
 		root = null;
 	}
->>>>>>> 15c252646c838bef6b4d931f6e1f161963174b8c
 
     public void add(T t) throws UnsupportedOperationException {
 	    int key = t.hashCode();
