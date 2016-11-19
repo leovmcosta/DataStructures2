@@ -9,12 +9,7 @@ import data_structures.Sorted;
 public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
     public class Node {
         T item;
-        int key;
         Node next;
-
-        public Node(int key) {
-            this.key = key;
-        }
 
         public int compareTo(Node o) {
             return this.item == null ? 1 : this.item.compareTo(o.item);
@@ -25,15 +20,14 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
     private Lock lock = new ReentrantLock();
 
     public CoarseGrainedList() {
-        head = new Node(Integer.MIN_VALUE);
-        head.next = new Node(Integer.MAX_VALUE);
+        head = new Node();
+        head.next = new Node();
         head.item = null;
     }
 
     public void add(T t) throws UnsupportedOperationException {
         Node pred, curr;
-        int key = t.hashCode();
-        Node n = new Node(key);
+        Node n = new Node();
         n.item = t;
         lock.lock();
         try {
@@ -52,8 +46,7 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
 
     public void remove(T t) throws UnsupportedOperationException {
         Node pred, curr;
-        int key = t.hashCode();
-        Node n = new Node(key);
+        Node n = new Node();
         n.item = t;
         lock.lock();
         try {
