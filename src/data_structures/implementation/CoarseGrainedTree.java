@@ -64,12 +64,11 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
     public void remove(T t) throws UnsupportedOperationException {
 		Node removeNode = new Node(t);
 
-		Node parent = root;
-        Node current = root;
-        boolean isLeftChild = false;
-
         lock.lock();
         try {
+			Node parent = root;
+			Node current = root;
+			boolean isLeftChild = false;
 	        while (removeNode.compareTo(current) != 0) {
 		        parent = current;
 				if (current.compareTo(removeNode) > 0) {
@@ -83,17 +82,7 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 			        return;
 		        }
 	        }
-	        if (current.left == null && current.right == null) {
-		        if (current == root) {
-			        root = null;
-		        }
-		        if (isLeftChild) {
-			        parent.left = null;
-		        } else {
-			        parent.right = null;
-		        }
-	        }
-	        else if (current.right == null) {
+	        if (current.right == null) {
 		        if (current == root) {
 			        root = current.left;
 		        } else if (isLeftChild) {
@@ -128,8 +117,8 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
     }
     
     public Node getSuccessor(Node deleteNode) {
-	    Node successor = null;
-	    Node successorParent = null;
+	    Node successor = new Node(null);
+	    Node successorParent = new Node(null);
 	    Node current = deleteNode.right;
 	    while (current != null) {
 		    successorParent = successor;
@@ -153,12 +142,10 @@ public class CoarseGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 		if (n.left != null) {
 			result.addAll(extractValues(n.left));
 		}
-
+		result.add(n.item);
 		if (n.right != null) {
 			result.addAll(extractValues(n.right));
 		}
-
-		result.add(n.item);
 
 		return result;
 	}

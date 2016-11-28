@@ -35,7 +35,7 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
         try {
             pred = head;
             curr = pred.next;
-            while (curr.compareTo(n) == -1) {
+            while (curr.compareTo(n) < 0) {
                 pred = curr;
                 curr = curr.next;
             }
@@ -57,7 +57,7 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
                 pred = curr;
                 curr = curr.next;
             }
-            if (curr.compareTo(n) >= 0) {
+            if (curr.compareTo(n) == 0) {
                 pred.next = curr.next;
             }
         } finally {
@@ -69,8 +69,8 @@ public class CoarseGrainedList<T extends Comparable<T>> implements Sorted<T> {
         ArrayList<T> list = new ArrayList<>();
         Node curr;
         curr = head;
-        while (curr.next.item != null) {
-            list.add(curr.item);
+        while (curr.next != null) {
+            if (curr.item != null) list.add(curr.item);
             curr = curr.next;
         }
         return list;
