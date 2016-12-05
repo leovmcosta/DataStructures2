@@ -2,6 +2,8 @@ package data_structures;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
@@ -26,12 +28,24 @@ public class WorkerThread<T extends Comparable<T>> extends Thread {
         this.doDebug = debug;
     }
 
+    // TODO: Remove before submitting - Testing purposes only
+    private final List<Long> addTime = new ArrayList<>();
+    private final List<Long> removeTime = new ArrayList<>();
+    private Long executionTime;
+
     @Override
     public void run() {
+        // TODO: Remove before submitting - Testing purposes only
+        long begin = ManagementFactory.getThreadMXBean().getThreadCpuTime(Thread.currentThread().getId());
         // First: add my items.
         for (T t : itemsToAdd) {
             doWork();
+            // TODO: Remove before submitting - Testing purposes only
+            long start = ManagementFactory.getThreadMXBean().getThreadCpuTime(Thread.currentThread().getId());
             sorted.add(t);
+            // TODO: Remove before submitting - Testing purposes only
+            long end = ManagementFactory.getThreadMXBean().getThreadCpuTime(Thread.currentThread().getId());
+            addTime.add(end-start);
         }
 
         // Barrier, and possibly print result.
@@ -48,17 +62,23 @@ public class WorkerThread<T extends Comparable<T>> extends Thread {
                 }
                 barrier.await();
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (BrokenBarrierException e) {
+        } catch (InterruptedException | BrokenBarrierException e) {
             e.printStackTrace();
         }
 
         // Remove my items.
         for (T t : itemsToRemove) {
             doWork();
+            // TODO: Remove before submitting - Testing purposes only
+            long start = ManagementFactory.getThreadMXBean().getThreadCpuTime(Thread.currentThread().getId());
             sorted.remove(t);
+            // TODO: Remove before submitting - Testing purposes only
+            long end = ManagementFactory.getThreadMXBean().getThreadCpuTime(Thread.currentThread().getId());
+            removeTime.add(end-start);
         }
+        // TODO: Remove before submitting - Testing purposes only
+        long endd = ManagementFactory.getThreadMXBean().getThreadCpuTime(Thread.currentThread().getId());
+        this.executionTime = endd - begin;
     }
 
     private void doWork() {
@@ -73,5 +93,18 @@ public class WorkerThread<T extends Comparable<T>> extends Thread {
             while (bean.getCurrentThreadCpuTime() < end)
                 ; // busy until we used enough cpu time.
         }
+    }
+
+    // TODO: Remove before submitting - Testing purposes only
+    public List<Long> getAddTime() {
+        return addTime;
+    }
+    // TODO: Remove before submitting - Testing purposes only
+    public List<Long> getRemoveTime() {
+        return removeTime;
+    }
+    // TODO: Remove before submitting - Testing purposes only
+    public Long getExecutionTime() {
+        return executionTime;
     }
 }
