@@ -11,41 +11,43 @@ import data_structures.Sorted;
 public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
 	public class Node {
 		T item;
-		int key;
 		Node next;
 		
-		public Node(int key) {
-			this.key = key;
+		public Node(T item) {
+			this.item = item;
+		}
+		
+		public int compareTo(Node o) {
+			return this.item == null ? 1 : this.item.compareTo(o.item);
 		}
 	}
 	
 	private Node head;
 	private Lock lock = new Reentrantlock();
+	
 	public FineGrainedList() {
-		head = new Node(Integer.MIN_VALUE);
-		head.next = new Node(Integer.MAX_VALUE);
+		head = new Node(null);
+		head.next = new Node(null);
 	}
 
     public void add(T t) throws UnsupportedOperationException {
-        int key = item.hashCode();
+        Node pred, curr;
+        Node n = new Node(t);
         pred.lock();
-        Node pred = head;
         try {
+        	pred = head;
         	Node curr = pred.next;
         	curr.lock();
         	try {
-        		while (curr.key < key) {
+        		while (curr.compareTo(n) < 0) {
         			pred.unlock();
         			pred = curr;
         			curr = curr.next;
-        			curr.lock();
+        			pred.lock();
         		}
-        		if (curr.key == key) {
+        		if (curr.compareTo(n) == 0) {
         			return false;
         		}
-        		Node newNode = new Node(item);
-        		newNode.next = curr;
-        		pred.next = newNode;
         		return true;
         	} finally {
         		curr.unlock();
@@ -57,20 +59,20 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
 
     public void remove(T t) throws UnsupportedOperationException {
         Node pred = null, curr = null;
-        int key = item.hashCode();
+        Node n = new Node(t);
         pred.lock();
         try {
         	pred = head;
         	curr = pred.next;
         	curr.lock();
         	try {
-        		while (curr.key < key) {
+        		while (curr.compareTo(n) < 0) {
         			pred.unlock();
         			pred = curr;
         			curr = curr.next;
-        			curr.lock();
+        			pred.lock();
         		}
-        		if (curr.key == key) {
+        		if (curr.compareTo(n) == 0) {
         			pred.next = curr.next;
         			return true;
         		}
@@ -83,7 +85,16 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
         }
     }
 
-    public ArrayList<T> toArrayList() {
-        throw new UnsupportedOperationException();
+    public ArrayList<T> toArrayList() throws UnsupportedOperationException {
+        ArrayList<T> list = new ArrayList<>();
+        Node curr;
+        curr = head;
+        while (curr.next != null) {
+        	if (curr.item != null) {
+        		list.add(curr.item);
+        	}
+        	curr = curr.next;
+        }
+        return list;
     }
 }
