@@ -23,8 +23,8 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
 	}
 	
 	private Node head;
-	private Lock pred = new ReentrantLock();
-	private Lock curr = new ReentrantLock();
+	private Lock predlock = new ReentrantLock();
+	private Lock currlock = new ReentrantLock();
 	
 	public FineGrainedList() {
 		head = new Node(null);
@@ -34,55 +34,55 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
     public void add(T t) throws UnsupportedOperationException {
         Node pred, curr;
         Node n = new Node(t);
-        pred.lock();
+        predlock.lock();
         try {
         	pred = head;
-        	Node curr = pred.next;
-        	curr.lock();
+        	curr = pred.next;
+        	currlock.lock();
         	try {
         		while (curr.compareTo(n) < 0) {
-        			pred.unlock();
+        			predlock.unlock();
         			pred = curr;
         			curr = curr.next;
-        			pred.lock();
+        			predlock.lock();
         		}
         		if (curr.compareTo(n) == 0) {
-        			return false;
+        			return;
         		}
-        		return true;
+        		return;
         	} finally {
-        		curr.unlock();
+        		currlock.unlock();
         	}
         } finally {
-        	pred.unlock();
+        	predlock.unlock();
         }
     }
 
     public void remove(T t) throws UnsupportedOperationException {
         Node pred = null, curr = null;
         Node n = new Node(t);
-        pred.lock();
+        predlock.lock();
         try {
         	pred = head;
         	curr = pred.next;
-        	curr.lock();
+        	currlock.lock();
         	try {
         		while (curr.compareTo(n) < 0) {
-        			pred.unlock();
+        			predlock.unlock();
         			pred = curr;
         			curr = curr.next;
-        			pred.lock();
+        			predlock.lock();
         		}
         		if (curr.compareTo(n) == 0) {
         			pred.next = curr.next;
-        			return true;
+        			return;
         		}
-        		return false;
+        		return;
         	} finally {
-        		curr.unlock();
+        		currlock.unlock();
         	}
         } finally {
-        	pred.unlock();
+        	predlock.unlock();
         }
     }
 
