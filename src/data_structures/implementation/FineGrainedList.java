@@ -41,14 +41,16 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
         	currlock.lock();
         	try {
         		while (curr.compareTo(n) < 0) {
-        			predlock.unlock();
+        			currlock.unlock();
         			pred = curr;
         			curr = curr.next;
-        			predlock.lock();
+        			currlock.lock();
         		}
         		if (curr.compareTo(n) == 0) {
         			return;
         		}
+        		n.next = curr;
+        		pred.next = n;
         		return;
         	} finally {
         		currlock.unlock();
@@ -68,10 +70,10 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
         	currlock.lock();
         	try {
         		while (curr.compareTo(n) < 0) {
-        			predlock.unlock();
+        			currlock.unlock();
         			pred = curr;
         			curr = curr.next;
-        			predlock.lock();
+        			currlock.lock();
         		}
         		if (curr.compareTo(n) == 0) {
         			pred.next = curr.next;
