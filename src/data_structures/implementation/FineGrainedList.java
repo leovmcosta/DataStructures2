@@ -23,7 +23,8 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
 	}
 	
 	private Node head;
-	private Lock lock = new Reentrantlock();
+	private Lock pred = new ReentrantLock();
+	private Lock curr = new ReentrantLock();
 	
 	public FineGrainedList() {
 		head = new Node(null);
