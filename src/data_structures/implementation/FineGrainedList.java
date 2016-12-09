@@ -12,6 +12,7 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
 	public class Node {
 		T item;
 		Node next;
+		Lock lock = new ReentrantLock();
 		
 		public Node(T item) {
 			this.item = item;
@@ -23,8 +24,6 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
 	}
 	
 	private Node head;
-	private Lock predlock = new ReentrantLock();
-	private Lock currlock = new ReentrantLock();
 	
 	public FineGrainedList() {
 		head = new Node(null);
@@ -34,17 +33,17 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
     public void add(T t) throws UnsupportedOperationException {
         Node pred, curr;
         Node n = new Node(t);
-        predlock.lock();
+        head.lock.lock();
         try {
         	pred = head;
         	curr = pred.next;
-        	currlock.lock();
+        	curr.lock.lock();
         	try {
         		while (curr.compareTo(n) < 0) {
-        			predlock.unlock();
+        			pred.lock.unlock();
         			pred = curr;
         			curr = curr.next;
-        			predlock.lock();
+        			curr.lock.lock();
         		}
         		if (curr.compareTo(n) == 0) {
         			return;
@@ -53,27 +52,27 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
         		pred.next = n;
         		return;
         	} finally {
-        		currlock.unlock();
+        		curr.lock.unlock();
         	}
         } finally {
-        	predlock.unlock();
+        	pred.lock.unlock();
         }
     }
 
     public void remove(T t) throws UnsupportedOperationException {
         Node pred = null, curr = null;
         Node n = new Node(t);
-        predlock.lock();
+        head.lock.lock();
         try {
         	pred = head;
         	curr = pred.next;
-        	currlock.lock();
+        	curr.lock.lock();
         	try {
         		while (curr.compareTo(n) < 0) {
-        			predlock.unlock();
+        			pred.lock.unlock();
         			pred = curr;
         			curr = curr.next;
-        			predlock.lock();
+        			curr.lock.lock();
         		}
         		if (curr.compareTo(n) == 0) {
         			pred.next = curr.next;
@@ -81,10 +80,10 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
         		}
         		return;
         	} finally {
-        		currlock.unlock();
+        		curr.lock.unlock();
         	}
         } finally {
-        	predlock.unlock();
+        	pred.lock.unlock();
         }
     }
 
