@@ -2,7 +2,9 @@ package data_structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 import data_structures.implementation.CoarseGrainedList;
 import data_structures.implementation.CoarseGrainedTree;
@@ -20,6 +22,11 @@ public class RunData<T extends Comparable<T>> {
     private final T[] itemsToRemove;
     private final int workTime;
     private final boolean debug;
+
+    // TODO: Remove before submitting - Testing purposes only
+    private final List<Long> threadsAddingTime = new ArrayList<>();
+    private final List<Long> threadsRemoveTime = new ArrayList<>();
+    private final List<Long> threadsExecutionTime = new ArrayList<>();
 
     private final Sorted<T> sorted;
 
@@ -78,6 +85,10 @@ public class RunData<T extends Comparable<T>> {
         for (WorkerThread<T> t : workerThreads) {
             try {
                 t.join();
+                // TODO: Remove before submitting - Testing purposes only
+                this.threadsExecutionTime.add(t.getExecutionTime());
+                this.threadsAddingTime.add(getAverage(t.getAddTime()));
+                this.threadsRemoveTime.add(getAverage(t.getRemoveTime()));
             } catch (InterruptedException e) {
                 throw new Error(
                         "Unexpected InterruptedException. Should not happen.",
@@ -90,6 +101,26 @@ public class RunData<T extends Comparable<T>> {
         System.out.println("data structure after removal (should be empty):");
         System.out.println(sorted.toArrayList().toString());
         System.out.println();
-        System.out.printf("time: %d ms\n\n", end - start);
+        System.out.println("Overall time ms: "+(end - start));
+        // TODO: Remove before submitting - Testing purposes only
+        System.out.println("Average threads execution time ms: "+ convertNanoSecondsToMilliseconds(getAverage(this.threadsExecutionTime)));
+        System.out.println("Average threads adding time ns: "+ convertNanoSecondsToMilliseconds(getAverage(this.threadsAddingTime)));
+        System.out.println("Average threads removal time ns: "+ convertNanoSecondsToMilliseconds(getAverage(this.threadsRemoveTime)));
+    }
+
+
+
+    // TODO: Remove before submitting - Testing purposes only
+    private Long getAverage(List<Long> l) {
+        Long sum = 0L;
+        for (Long i : l) {
+            sum += i;
+        }
+        return sum/l.size();
+    }
+
+    // TODO: Remove before submitting - Testing purposes only
+    private double convertNanoSecondsToMilliseconds(Long l) {
+        return l / 1000000.0;
     }
 }
