@@ -34,8 +34,8 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
         Node pred, curr;
         Node n = new Node(t);
         head.lock.lock();
+        pred = head;
         try {
-        	pred = head;
         	curr = pred.next;
         	curr.lock.lock();
         	try {
