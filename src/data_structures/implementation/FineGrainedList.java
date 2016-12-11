@@ -17,10 +17,20 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
 		public Node(T item) {
 			this.item = item;
 		}
+
+		public void lock() {
+			this.lock.lock();
+		}
+
+		public void unlock() {
+			this.lock.unlock();
+		}
 		
 		public int compareTo(Node o) {
 			return this.item == null ? 1 : this.item.compareTo(o.item);
 		}
+
+		public int compareTo (T data) {return this.item == null ? 1 : this.item.compareTo(data); }
 	}
 	
 	private Node head;
@@ -33,57 +43,53 @@ public class FineGrainedList<T extends Comparable<T>> implements Sorted<T> {
     public void add(T t) throws UnsupportedOperationException {
         Node pred, curr;
         Node n = new Node(t);
-        head.lock.lock();
+        head.lock();
         pred = head;
         try {
         	curr = pred.next;
-        	curr.lock.lock();
+        	curr.lock();
         	try {
         		while (curr.compareTo(n) < 0) {
-        			pred.lock.unlock();
+        			pred.unlock();
         			pred = curr;
         			curr = curr.next;
-        			curr.lock.lock();
+        			curr.lock();
         		}
         		if (curr.compareTo(n) == 0) {
         			return;
         		}
         		n.next = curr;
         		pred.next = n;
-        		return;
-        	} finally {
-        		curr.lock.unlock();
+			} finally {
+        		curr.unlock();
         	}
         } finally {
-        	pred.lock.unlock();
+        	pred.unlock();
         }
     }
 
     public void remove(T t) throws UnsupportedOperationException {
-        Node pred = null, curr = null;
-        Node n = new Node(t);
-        head.lock.lock();
+        Node pred = null, curr;
+        head.lock();
         try {
         	pred = head;
         	curr = pred.next;
-        	curr.lock.lock();
+        	curr.lock();
         	try {
-        		while (curr.compareTo(n) < 0) {
-        			pred.lock.unlock();
+        		while (curr.compareTo(t) < 0) {
+        			pred.unlock();
         			pred = curr;
         			curr = curr.next;
-        			curr.lock.lock();
+        			curr.lock();
         		}
-        		if (curr.compareTo(n) == 0) {
+        		if (curr.compareTo(t) == 0) {
         			pred.next = curr.next;
-        			return;
-        		}
-        		return;
-        	} finally {
-        		curr.lock.unlock();
+				}
+			} finally {
+        		curr.unlock();
         	}
         } finally {
-        	pred.lock.unlock();
+        	pred.unlock();
         }
     }
 
