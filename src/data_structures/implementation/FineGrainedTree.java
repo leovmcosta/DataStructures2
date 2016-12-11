@@ -95,75 +95,80 @@ public class FineGrainedTree<T extends Comparable<T>> implements Sorted<T> {
 
         rootLock.lock();
         if (root != null) {
-            //Tree is not empty, search for the passed data.  Start by checking
-            //the root separately.
+            //Tree is not empty, search for data
             curr = root;
             parent = curr;
             curr.lock();
-            if (curr.compareTo(t) == 0) {
-                //Found the specified data, remove it from the tree
-                Node successor = getSuccessor(curr);
+            try {
+                if (curr.compareTo(t) == 0) {
+                    try {
+                        //Found the data, remove it from the tree
+                        Node successor = getSuccessor(curr);
 
-                root = successor;
+                        root = successor;
 
-                if (successor != null) {
-                    successor.left = curr.left;
-                    successor.right = curr.right;
+                        if (successor != null) {
+                            successor.left = curr.left;
+                            successor.right = curr.right;
+                        }
+                        return;
+                    } finally {
+                        curr.unlock();
+                    }
                 }
-                curr.unlock();
+            } finally {
                 rootLock.unlock();
-                return;
             }
             curr.lock();
-            rootLock.unlock();
             while(true) {
                 compare = curr.compareTo(t);
-                if(compare != 0) {
-                    parent.unlock();
-                    parent = curr;
-                    if(compare > 0) {
-                        //curNode is "bigger" than passed data, search the left
-                        //subtree
-                        curr = curr.left;
-                        isLeftChild = true;
-                    } else if(compare < 0) {
-                        //curNode is "smaller" than passed data, search the right
-                        //subtree
-                        curr = curr.right;
-                        isLeftChild = false;
+                try {
+                    if(compare != 0) {
+                        parent.unlock();
+                        parent = curr;
+                        if(compare > 0) {
+                            //curNode is bigger than data, search the left subtree
+                            curr = curr.left;
+                            isLeftChild = true;
+                        } else if(compare < 0) {
+                            //curNode is smaller than data, search the right subtree
+                            curr = curr.right;
+                            isLeftChild = false;
+                        }
+                    } else {
+                        try {
+                            //Found the data, remove it from the tree
+                            Node successor = getSuccessor(curr);
+
+                            //Set the parent to the new child
+                            if(isLeftChild)
+                                parent.left = successor;
+                            else
+                                parent.right = successor;
+
+                            //Replace curNode with successor
+                            if(successor != null) {
+                                successor.left = curr.left;
+                                successor.right = curr.right;
+                            }
+                            return;
+                        } finally {
+                            curr.unlock();
+                            parent.unlock();
+                        }
                     }
-                } else {
-                    //Found the specified data, remove it from the tree
-                    Node successor = getSuccessor(curr);
-
-                    //Set the parent pointer to the new child
-                    if(isLeftChild)
-                        parent.left = successor;
-                    else
-                        parent.right = successor;
-
-                    //Replace curNode with replacement
-                    if(successor != null) {
-                        successor.left = curr.left;
-                        successor.right = curr.right;
+                    if (curr == null) break;
+                } finally {
+                    if (curr != null) {
+                        curr.lock();
                     }
-
-                    curr.unlock();
-                    parent.unlock();
-                    return;
-                }
-
-                if(curr == null) {
-                    break;
-                } else {
-                    curr.lock();
                 }
             }
         } else {
             rootLock.unlock();
             return;
         }
-        //The specified data was not in the tree
+        //data is not in the tree
         parent.unlock();
     }
 
@@ -171,7 +176,7 @@ public class FineGrainedTree<T extends Comparable<T>> implements Sorted<T> {
         Node curr, parent;
 
         if(deleteNode.left != null) {
-            //Find the "biggest" node in the left subtree as the replacement
+            //Find the biggest node in the left subtree as the successor
             parent = deleteNode;
             curr = deleteNode.left;
             curr.lock();
@@ -194,7 +199,7 @@ public class FineGrainedTree<T extends Comparable<T>> implements Sorted<T> {
                 curr.left.unlock();
             curr.unlock();
         } else if(deleteNode.right != null) {
-            //Find the "smallest" node in the right subtree as the replacement
+            //Find the smallest node in the right subtree as the successor
             parent = deleteNode;
             curr = deleteNode.right;
             curr.lock();
@@ -217,7 +222,7 @@ public class FineGrainedTree<T extends Comparable<T>> implements Sorted<T> {
                 curr.right.unlock();
             curr.unlock();
         } else {
-            //No children, no replacement needed
+            //No children, no successor needed
             return null;
         }
         return curr;
