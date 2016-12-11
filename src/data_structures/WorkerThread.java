@@ -14,11 +14,13 @@ public class WorkerThread<T extends Comparable<T>> extends Thread {
     private final T[] itemsToRemove;
     private final int workTime;
     private final boolean doDebug;
+    // TODO: Remove before submitting - Testing purposes only
+    private final boolean doBarrier;
     private final CyclicBarrier barrier;
 
     public WorkerThread(int id, Sorted<T> list, T[] itemsToAdd,
             T[] itemsToRemove, int workTime, CyclicBarrier barrier,
-            boolean debug) {
+            boolean debug, boolean doBarrier) {
         this.sorted = list;
         this.id = id;
         this.itemsToAdd = itemsToAdd;
@@ -26,6 +28,8 @@ public class WorkerThread<T extends Comparable<T>> extends Thread {
         this.workTime = workTime;
         this.barrier = barrier;
         this.doDebug = debug;
+        // TODO: Remove before submitting - Testing purposes only
+        this.doBarrier = doBarrier;
     }
 
     // TODO: Remove before submitting - Testing purposes only
@@ -52,18 +56,20 @@ public class WorkerThread<T extends Comparable<T>> extends Thread {
         // To test inter-operability of add() and remove(), you can comment out
         // this barrier so that some threads may start removing while other
         // threads are still adding.
-        try {
-            barrier.await();
-            if (this.doDebug) {
-                if (this.id == 0) {
-                    System.out.printf(
-                            "Output after adding, before removing:\n%s\n",
-                            sorted.toArrayList().toString());
-                }
+        if (doBarrier){
+            try {
                 barrier.await();
+                if (this.doDebug) {
+                    if (this.id == 0) {
+                        System.out.printf(
+                                "Output after adding, before removing:\n%s\n",
+                                sorted.toArrayList().toString());
+                    }
+                    barrier.await();
+                }
+            } catch (InterruptedException | BrokenBarrierException e) {
+                e.printStackTrace();
             }
-        } catch (InterruptedException | BrokenBarrierException e) {
-            e.printStackTrace();
         }
 
         // Remove my items.

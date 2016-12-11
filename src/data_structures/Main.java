@@ -139,6 +139,10 @@ public class Main {
         System.out.println("    <nrThreads> is a number > 0");
         System.out.println("    <nrItems> is a number > 0");
         System.out.println("    <workTime> is a number >= 0 (micro seconds)");
+        // TODO: Remove before submitting - Testing purposes only
+        System.out.println("    <data> either int for Integers or str for String");
+        System.out.println("    <barrier> if false inter-operability." +
+                "           of add() and remove() will be tested");
         System.out.println(
                 "    [debug] can be omitted. If added as the last parameter,");
         System.out.println("            the data structure will be printed ");
@@ -148,7 +152,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        if (args.length < 4 || args.length > 5) {
+        if (args.length < 5 || args.length > 7) {
             exitWithError();
         }
 
@@ -172,10 +176,25 @@ public class Main {
         if (workTime < 0) {
             exitWithError();
         }
+        // TODO: Remove before submitting - Testing purposes only
+        String data = args[4];
+        if (! "str".equals(data) && !"int".equals(data)) {
+            exitWithError();
+        }
 
         boolean debug = false;
-        if (args.length == 5) {
-            if (args[4].equalsIgnoreCase("debug")) {
+        // TODO: Remove before submitting - Testing purposes only
+        boolean barrier = true;
+        if (args.length >= 6) {
+            if (!"false".equals(args[5]) && !"true".equals(args[5]) ) {
+                exitWithError();
+            } else if (args[5].equalsIgnoreCase("false")) {
+                barrier = false;
+            }
+        }
+        // TODO: Remove before submitting - Testing purposes only
+        if (args.length == 7) {
+            if (args[6].equalsIgnoreCase("debug")) {
                 debug = true;
             } else {
                 System.out.println(
@@ -186,15 +205,32 @@ public class Main {
 
         // Create the items to be added and deleted.
         long seed = computeSeed(nrThreads, nrItems, workTime);
-        Integer[] itemsToAdd = new Integer[nrItems];
-        Integer[] itemsToRemove = new Integer[nrItems];
+        // TODO: Remove before submitting - Testing purposes only
+        if (data.equals("int")) {
+            Integer[] itemsToAdd = new Integer[nrItems];
+            Integer[] itemsToRemove = new Integer[nrItems];
 
-        RunData<Integer> run = new RunData<Integer>(dataStructure, nrItems,
-                nrThreads, itemsToAdd, itemsToRemove, workTime, debug);
-        boolean mayHaveDuplicates = !dataStructure.equalsIgnoreCase(LFT);
+            RunData<Integer> run = new RunData<Integer>(dataStructure, nrItems,
+                    nrThreads, itemsToAdd, itemsToRemove, workTime, debug, barrier);
 
-        createWorkData(itemsToAdd, itemsToRemove, seed, mayHaveDuplicates);
+            boolean mayHaveDuplicates = !dataStructure.equalsIgnoreCase(LFT);
 
-        run.runDataStructure();
+            createWorkData(itemsToAdd, itemsToRemove, seed, mayHaveDuplicates);
+
+            run.runDataStructure();
+        } else {
+            String[] itemsToAdd = new String[nrItems];
+            String[] itemsToRemove = new String[nrItems];
+
+            RunData<String> run = new RunData<String>(dataStructure, nrItems,
+                    nrThreads, itemsToAdd, itemsToRemove, workTime, debug, barrier);
+
+            boolean mayHaveDuplicates = !dataStructure.equalsIgnoreCase(LFT);
+
+            Main2.createWorkData(itemsToAdd, itemsToRemove, seed, mayHaveDuplicates);
+
+            run.runDataStructure();
+        }
+
     }
 }

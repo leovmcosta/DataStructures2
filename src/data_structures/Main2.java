@@ -67,7 +67,8 @@ public class Main2 {
      * @param allowDuplicates
      *            whether duplicates are allowed or not
      */
-    private static void createWorkData(String[] itemsToAdd,
+    // TODO: Remove before submitting - Testing purposes only (revert back to private access)
+    public static void createWorkData(String[] itemsToAdd,
             String[] itemsToRemove, long seed, boolean allowDuplicates) {
         Random random = new Random(seed);
         Set<String> strings = new HashSet<String>();
@@ -97,6 +98,8 @@ public class Main2 {
         System.out.println("    <nrThreads> is a number > 0");
         System.out.println("    <nrItems> is a number > 0");
         System.out.println("    <workTime> is a number >= 0 (micro seconds)");
+        System.out.println("    [barrier] can be omitted. If false inter-operability" +
+                "           of add() and remove() will be tested");
         System.out.println(
                 "    [debug] can be omitted. If added as the last parameter,");
         System.out.println("            the data structure will be printed ");
@@ -106,7 +109,7 @@ public class Main2 {
     }
 
     public static void main(String[] args) {
-        if (args.length < 4 || args.length > 5) {
+        if (args.length < 4 || args.length > 6) {
             exitWithError();
         }
 
@@ -132,8 +135,20 @@ public class Main2 {
         }
 
         boolean debug = false;
-        if (args.length == 5) {
-            if (args[4].equalsIgnoreCase("debug")) {
+        // TODO: Remove before submitting - Testing purposes only
+        boolean barrier = true;
+        if (args.length >= 5) {
+            if (args[4].equalsIgnoreCase("false")) {
+                barrier = false;
+            } else {
+                System.out.println(
+                        "barrier should be 'false', or be omitted\n");
+                System.exit(1);
+            }
+        }
+        // TODO: Remove before submitting - Testing purposes only
+        if (args.length == 6) {
+            if (args[5].equalsIgnoreCase("debug")) {
                 debug = true;
             } else {
                 System.out.println(
@@ -148,7 +163,7 @@ public class Main2 {
         String[] itemsToRemove = new String[nrItems];
 
         RunData<String> run = new RunData<String>(dataStructure, nrItems,
-                nrThreads, itemsToAdd, itemsToRemove, workTime, debug);
+                nrThreads, itemsToAdd, itemsToRemove, workTime, debug, barrier);
         boolean mayHaveDuplicates = !dataStructure.equalsIgnoreCase(Main.LFT);
 
         createWorkData(itemsToAdd, itemsToRemove, seed, mayHaveDuplicates);

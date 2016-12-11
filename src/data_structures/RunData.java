@@ -22,6 +22,8 @@ public class RunData<T extends Comparable<T>> {
     private final T[] itemsToRemove;
     private final int workTime;
     private final boolean debug;
+    // TODO: Remove before submitting - Testing purposes only
+    private final boolean doBarrier;
 
     // TODO: Remove before submitting - Testing purposes only
     private final List<Long> threadsAddingTime = new ArrayList<>();
@@ -31,7 +33,7 @@ public class RunData<T extends Comparable<T>> {
     private final Sorted<T> sorted;
 
     public RunData(String dataStructure, int nrItems, int nrThreads,
-            T[] itemsToAdd, T[] itemsToRemove, int workTime, boolean debug) {
+            T[] itemsToAdd, T[] itemsToRemove, int workTime, boolean debug, boolean barrier) {
         this.dataStructure = dataStructure;
         this.nrItems = nrItems;
         this.nrThreads = nrThreads;
@@ -39,6 +41,8 @@ public class RunData<T extends Comparable<T>> {
         this.itemsToRemove = itemsToRemove;
         this.workTime = workTime;
         this.debug = debug;
+        // TODO: Remove before submitting - Testing purposes only
+        this.doBarrier = barrier;
 
         // Determine and allocate the data structure to be used.
 
@@ -71,7 +75,7 @@ public class RunData<T extends Comparable<T>> {
             T[] toRemove = Arrays.copyOfRange(itemsToRemove, i * sz,
                     (i + 1) * sz);
             workerThreads.add(new WorkerThread<T>(i, sorted, toAdd, toRemove,
-                    workTime, barrier, debug));
+                    workTime, barrier, debug, doBarrier));
         }
 
         // Start worker threads
